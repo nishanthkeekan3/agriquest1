@@ -1,0 +1,544 @@
+{% extends "base.html" %}
+{% block title %}Farm Market Analysis - {{ profile.location_name or 'Farm' }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Professional and mature color palette */
+    :root {
+        --dark-green: #2F4F4F;
+        --lime-green: #90EE90;
+        --off-white: #F5F5DC;
+        --text-color: #e0e0e0;
+    }
+    
+    /* Global background and font styling */
+    body {
+        background-color: var(--dark-green);
+        background-image: url('{{ url_for("static", filename="agricultural-field-background.jpg") }}');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    body::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{{ url_for("static", filename="leaves-pattern.png") }}');
+        background-repeat: repeat;
+        opacity: 0.1;
+        z-index: -1;
+    }
+
+    /* AI Insights Container and Card Styles (Reused for consistency) */
+    .insights-container {
+        padding: 2rem 0;
+    }
+    
+    .insights-card {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--off-white);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .insights-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+    
+    .insights-card h3,
+    .insights-card h4,
+    .insights-card h5,
+    .insights-card h6 {
+        color: var(--lime-green);
+        font-weight: bold;
+    }
+    
+    .insights-card p,
+    .insights-card li,
+    .insights-card strong,
+    .insights-card small {
+        color: var(--off-white);
+    }
+    
+    /* Specific section headers */
+    .farm-header,
+    .opportunity-card,
+    .risk-card,
+    .profit-card,
+    .seasonal-card {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--off-white);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--lime-green);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .opportunity-card { border: 1px solid #FF9800; }
+    .risk-card { border: 1px solid #F44336; }
+    .profit-card { border: 1px solid #4CAF50; }
+    .seasonal-card { border: 1px solid #2196F3; }
+
+    /* Special card backgrounds for opportunities and risks */
+    .opportunity-card,
+    .risk-card,
+    .profit-card,
+    .seasonal-card {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--off-white);
+    }
+
+    .opportunity-card h4, .opportunity-card h5 { color: #FF9800; }
+    .risk-card h4, .risk-card h5 { color: #F44336; }
+    .profit-card h4, .profit-card h5 { color: #4CAF50; }
+    .seasonal-card h4, .seasonal-card h5 { color: #2196F3; }
+
+    /* Chart and nested card styling */
+    .chart-container {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .insight-card {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 5px solid var(--lime-green);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: var(--lime-green);
+    }
+    
+    .metric-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        color: var(--off-white);
+    }
+    
+    .metric-value.text-success { color: var(--lime-green) !important; }
+    .metric-value.text-danger { color: #FF6347 !important; }
+
+    /* Badge and Button Consistency */
+    .crop-badge, .risk-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        margin: 0.25rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--off-white);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .bg-white.bg-opacity-20 {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        color: var(--off-white) !important;
+    }
+    
+    .btn-outline-light {
+        color: var(--off-white);
+        border-color: var(--off-white);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-light:hover {
+        background: var(--off-white);
+        color: var(--dark-green);
+    }
+    
+    .btn-primary {
+        background-color: var(--lime-green);
+        border-color: var(--lime-green);
+        color: var(--dark-green);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--dark-green);
+        border-color: var(--dark-green);
+        color: var(--lime-green);
+    }
+    
+    /* Text Colors for readability */
+    .text-white { color: var(--off-white) !important; }
+    .text-white-50 { color: rgba(255, 255, 255, 0.7) !important; }
+    .text-primary { color: var(--lime-green) !important; }
+    .text-success { color: var(--lime-green) !important; }
+    .text-warning { color: #f7d56e !important; }
+    .text-info { color: #87CEEB !important; }
+    .text-danger { color: #ff6347 !important; }
+    .text-muted { color: rgba(255, 255, 255, 0.5) !important; }
+</style>
+
+<div class="insights-container">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex align-items-center mb-3">
+                    <a href="{{ url_for('farm.view_profile', profile_id=profile.id) }}" class="btn btn-outline-light me-3">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Farm
+                    </a>
+                    <h1 class="text-white mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Farm Market Analysis
+                    </h1>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="farm-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-2 text-white">{{ farm_insights.farm_name }}</h2>
+                            <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i>{{ farm_insights.farm_location }}</p>
+                            <p class="mb-1"><i class="fas fa-seedling me-2"></i>{{ farm_insights.soil_type }} Soil</p>
+                            <p class="mb-0"><i class="fas fa-cloud-sun me-2"></i>{{ farm_insights.climate_zone }} Climate</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="metric-value">{{ farm_insights.optimal_crops|length }}</div>
+                            <div class="metric-label">Optimal Crops</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="chart-container insights-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-chart-area me-2 text-primary"></i>Market Price Trends for Your Farm
+                    </h4>
+                    <canvas id="farmPriceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="opportunity-card insights-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-star me-2"></i>Top Market Opportunities
+                    </h4>
+                    <div class="row">
+                        {% for opportunity in farm_insights.market_opportunities[:3] %}
+                        <div class="col-md-4 mb-3">
+                            <div class="bg-white bg-opacity-20 rounded p-3">
+                                <h5 class="mb-2 text-white">{{ opportunity.crop }}</h5>
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="metric-value">{{ "%.0f"|format(opportunity.price) }}</div>
+                                        <div class="metric-label">₹/quintal</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="metric-value">{{ "%.1f"|format(opportunity.demand * 100) }}%</div>
+                                        <div class="metric-label">Demand</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="metric-value {% if opportunity.trend > 0 %}text-success{% elif opportunity.trend < 0 %}text-danger{% endif %}">
+                                            {% if opportunity.trend > 0 %}+{% endif %}{{ "%.1f"|format(opportunity.trend) }}%
+                                        </div>
+                                        <div class="metric-label">Trend</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="profit-card insights-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-rupee-sign me-2"></i>Profitability Analysis
+                    </h4>
+                    <div class="row">
+                        {% for crop, analysis in farm_insights.profitability_analysis.items() %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="bg-white bg-opacity-20 rounded p-3">
+                                <h6 class="mb-2 text-white">{{ crop }}</h6>
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <div class="metric-value">{{ "%.0f"|format(analysis.estimated_profit) }}</div>
+                                        <div class="metric-label">₹/hectare</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="metric-value">{{ "%.1f"|format(analysis.profit_margin) }}%</div>
+                                        <div class="metric-label">Margin</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-center">
+                                    <small>Yield: {{ analysis.estimated_yield }} tons/hectare</small><br>
+                                    <small>Cost: ₹{{ "%.0f"|format(analysis.estimated_cost) }}/hectare</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="seasonal-card insights-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-calendar-alt me-2"></i>Seasonal Recommendations
+                    </h4>
+                    <div class="mb-3">
+                        <h6 class="text-white">Current Season: {{ farm_insights.seasonal_recommendations.current_season }}</h6>
+                        <p class="mb-2">Recommended crops for your farm:</p>
+                        {% for crop in farm_insights.seasonal_recommendations.recommended_crops %}
+                            <span class="crop-badge">{{ crop }}</span>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <h6 class="text-white">All seasonal crops:</h6>
+                        {% for crop in farm_insights.seasonal_recommendations.all_seasonal_crops %}
+                            <span class="crop-badge">{{ crop }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="insight-card insights-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-seedling me-2 text-success"></i>Optimal Crops for Your Farm
+                    </h4>
+                    <p class="mb-3 text-muted">Crops that are suitable for both your soil type and climate:</p>
+                    {% for crop in farm_insights.optimal_crops %}
+                        <span class="crop-badge">{{ crop }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        {% if farm_insights.risk_factors %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="risk-card insights-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Risk Factors & Recommendations
+                    </h4>
+                    {% for risk in farm_insights.risk_factors %}
+                        <div class="bg-white bg-opacity-20 rounded p-2 mb-2">
+                            <i class="fas fa-info-circle me-2"></i>{{ risk }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if climate_summary %}
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="chart-container insights-card">
+                    <h5 class="mb-3">
+                        <i class="fas fa-thermometer-half me-2 text-danger"></i>Temperature Analysis
+                    </h5>
+                    <canvas id="temperatureChart" width="300" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="chart-container insights-card">
+                    <h5 class="mb-3">
+                        <i class="fas fa-cloud-rain me-2 text-info"></i>Rainfall Analysis
+                    </h5>
+                    <canvas id="rainfallChart" width="300" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{{ url_for('farm.ai_insights') }}" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-brain me-2"></i>Get AI Insights
+                </a>
+                <a href="{{ url_for('farm.market_data') }}" class="btn btn-outline-light btn-lg me-3">
+                    <i class="fas fa-chart-bar me-2"></i>General Market Data
+                </a>
+                <a href="{{ url_for('farm.view_profile', profile_id=profile.id) }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-seedling me-2"></i>View Farm Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Farm-specific market data
+    const farmMarketData = {{ market_data|tojson }};
+    const farmInsights = {{ farm_insights|tojson }};
+    const climateSummary = {{ climate_summary|tojson if climate_summary else 'null' }};
+    
+    // Farm Price Trends Chart
+    const farmPriceCtx = document.getElementById('farmPriceChart').getContext('2d');
+    const farmPriceChart = new Chart(farmPriceCtx, {
+        type: 'line',
+        data: {
+            labels: farmInsights.optimal_crops,
+            datasets: [{
+                label: 'Price (₹/quintal)',
+                data: farmInsights.optimal_crops.map(crop => 
+                    farmMarketData[crop] ? farmMarketData[crop].latest_price : 0
+                ),
+                borderColor: '#90EE90',
+                backgroundColor: 'rgba(144, 238, 144, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Demand Index',
+                data: farmInsights.optimal_crops.map(crop => 
+                    farmMarketData[crop] ? farmMarketData[crop].demand_index * 100 : 0
+                ),
+                borderColor: '#FF9800',
+                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Market Trends for Your Farm\'s Optimal Crops',
+                    color: '#F5F5DC'
+                },
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#F5F5DC'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#F5F5DC' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Price (₹/quintal)',
+                        color: '#F5F5DC'
+                    },
+                    ticks: { color: '#F5F5DC' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Demand Index (%)',
+                        color: '#F5F5DC'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: { color: '#F5F5DC' }
+                }
+            }
+        }
+    });
+    
+    // Climate Charts
+    if (climateSummary) {
+        // Temperature Chart
+        const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+        const tempChart = new Chart(tempCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Average Temperature', 'Temperature Range'],
+                datasets: [{
+                    data: [climateSummary.avg_temp, 10], // Assuming 10°C range
+                    backgroundColor: ['#F44336', 'rgba(244, 67, 54, 0.3)'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Avg: ${climateSummary.avg_temp}°C`,
+                        color: '#F5F5DC'
+                    },
+                    legend: {
+                        labels: {
+                            color: '#F5F5DC'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Rainfall Chart
+        const rainCtx = document.getElementById('rainfallChart').getContext('2d');
+        const rainChart = new Chart(rainCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Average Rainfall', 'Rainfall Range'],
+                datasets: [{
+                    data: [climateSummary.avg_rainfall, 500], // Assuming 500mm range
+                    backgroundColor: ['#2196F3', 'rgba(33, 150, 243, 0.3)'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Avg: ${climateSummary.avg_rainfall}mm`,
+                        color: '#F5F5DC'
+                    },
+                    legend: {
+                        labels: {
+                            color: '#F5F5DC'
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

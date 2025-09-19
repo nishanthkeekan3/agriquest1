@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriQuest AI Dashboard Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2E7D32, #4CAF50);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .farm-info {
+            text-align: right;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .section h3 {
+            color: #2E7D32;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section h3::before {
+            content: "🌱";
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .farm-health {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .health-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .health-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+        
+        .weather-widget {
+            background: linear-gradient(135deg, #87CEEB, #4682B4);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .weather-chart {
+            height: 120px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .recommendations {
+            grid-column: 1 / -1;
+        }
+        
+        .recommendation-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .recommendation-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .crop-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 10px;
+        }
+        
+        .confidence-score {
+            background: #E8F5E8;
+            color: #2E7D32;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .profit-projection {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .risk-assessment {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .analytics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .market-alerts {
+            background: #FFF3E0;
+            border-left: 5px solid #FF9800;
+        }
+        
+        .alert-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .price-change {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .recommendation-text {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .ai-insights {
+            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+            border-left: 5px solid #2196F3;
+        }
+        
+        .insight-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .insight-title {
+            font-weight: bold;
+            color: #1976D2;
+            margin-bottom: 5px;
+        }
+        
+        .insight-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .farm-health {
+                grid-template-columns: 1fr;
+            }
+            
+            .analytics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <div>
+                <h1>🌾 AgriQuest AI Dashboard</h1>
+                <p>Your AI-Powered Farming Assistant</p>
+            </div>
+            <div class="farm-info">
+                <h3>Green Valley Farm</h3>
+                <p>5.2 hectares • North Region</p>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- Farm Health Overview -->
+            <div class="section farm-health">
+                <div class="health-card">
+                    <h4>Farm Health Score</h4>
+                    <div class="health-score">85%</div>
+                    <p>Excellent - All systems optimal</p>
+                </div>
+                
+                <div class="weather-widget">
+                    <h4>🌤️ 7-Day Weather Forecast</h4>
+                    <div class="weather-chart">
+                        📊 Interactive Weather Chart
+                    </div>
+                </div>
+                
+                <div class="section market-alerts">
+                    <h4>📈 Market Opportunities</h4>
+                    <div class="alert-item">
+                        <span class="crop-name">Organic Tomatoes</span>
+                        <span class="price-change">+15%</span>
+                        <span class="recommendation-text">Consider planting</span>
+                    </div>
+                    <div class="alert-item">
+                        <span class="crop-name">Quinoa</span>
+                        <span class="price-change">+22%</span>
+                        <span class="recommendation-text">High demand</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Recommendations -->
+            <div class="section recommendations">
+                <h3>🤖 AI-Powered Recommendations</h3>
+                <div class="recommendation-cards">
+                    <div class="recommendation-card">
+                        <div class="crop-name">Primary Crop: Wheat</div>
+                        <div class="confidence-score">92% confidence</div>
+                        <div class="profit-projection">+$2,400 projected profit</div>
+                        <div class="risk-assessment">🟢 Low risk • High yield potential</div>
+                    </div>
+                    
+                    <div class="recommendation-card">
+                        <div class="crop-name">Secondary: Soybean</div>
+                        <div class="confidence-score">87% confidence</div>
+                        <div class="profit-projection">+$1,800 projected profit</div>
+                        <div class="risk-assessment">🟡 Medium risk • Good market price</div>
+                    </div>
+                    
+                    <div class="recommendation-card">
+                        <div class="crop-name">Cover Crop: Clover</div>
+                        <div class="confidence-score">95% confidence</div>
+                        <div class="profit-projection">Soil health improvement</div>
+                        <div class="risk-assessment">🟢 Low risk • Nitrogen fixation</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Farm Analytics -->
+            <div class="section analytics">
+                <div class="chart-container">
+                    <div>
+                        <h4>🌱 Soil Health Analysis</h4>
+                        <p>📊 Interactive soil health visualization</p>
+                        <p>NPK levels, pH, organic matter</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div>
+                        <h4>📈 Yield Predictions</h4>
+                        <p>📊 Yield forecasting visualization</p>
+                        <p>Expected harvest quantities</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Insights -->
+            <div class="section ai-insights">
+                <h3>🧠 AI Insights & Alerts</h3>
+                <div class="insight-item">
+                    <div class="insight-title">🌡️ Temperature Alert</div>
+                    <div class="insight-description">Expected temperature drop in 3 days. Consider protecting sensitive crops.</div>
+                </div>
+                <div class="insight-item">
+                    <div class="insight-title">💧 Irrigation Recommendation</div>
+                    <div class="insight-description">Soil moisture levels indicate irrigation needed in 2 days.</div>
+                </div>
+                <div class="insight-item">
+                    <div class="insight-title">💰 Market Opportunity</div>
+                    <div class="insight-description">Local organic market showing 20% price premium for your region.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

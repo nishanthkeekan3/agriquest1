@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Login - AgriQuest{% endblock %}
+{% block content %}
+
+<style>
+    /* Professional, dark background */
+    :root {
+        --dark-bg: #1e1e2f;
+        --card-bg: rgba(45, 45, 66, 0.4);
+        --border-color: rgba(255, 255, 255, 0.1);
+        --text-color: #e0e0e0;
+        --accent-green: #2ecc71;
+        --input-bg: rgba(255, 255, 255, 0.05);
+        --input-border: rgba(255, 255, 255, 0.2);
+    }
+    
+    body {
+        background-color: var(--dark-bg);
+        background-image: url('{{ url_for("static", filename="agricultural-field-background.jpg") }}');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    body::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{{ url_for("static", filename="leaves-pattern.png") }}');
+        background-repeat: repeat;
+        opacity: 0.1;
+        z-index: -1;
+    }
+
+    /* Refined Glassmorphism card and text */
+    .card-form-bg {
+        background: var(--card-bg);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        animation: cardFadeIn 1s ease-out forwards;
+        opacity: 0;
+        color: var(--text-color);
+    }
+
+    @keyframes cardFadeIn {
+        0% { transform: translateY(20px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+    
+    .card-header .threed-text {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--text-color);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        letter-spacing: 1px;
+    }
+
+    /* Professional form input styling */
+    .form-control-lg {
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+        padding: 0.75rem 1.25rem;
+        border-radius: 10px;
+    }
+
+    .form-control-lg:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.15);
+        color: var(--text-color);
+    }
+    
+    .form-control-lg::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .form-label i {
+        color: var(--accent-green);
+    }
+
+    /* Clean, professional button */
+    .btn-login {
+        background-color: var(--accent-green);
+        border: none;
+        color: var(--dark-bg);
+        padding: 0.75rem 2.5rem;
+        border-radius: 50px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-login:hover {
+        background-color: #27ae60;
+        color: var(--dark-bg);
+    }
+
+    .btn-login::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: all 0.5s ease;
+    }
+
+    .btn-login:hover::before {
+        left: 100%;
+    }
+    
+    .text-muted-link {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    .text-muted-link:hover {
+        color: var(--accent-green) !important;
+    }
+
+</style>
+
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="col-md-8 col-lg-6">
+        <div class="card card-form-bg shadow-lg">
+            <div class="card-header text-center border-0 pt-4 pb-2">
+                <h2 class="card-title fw-bold mb-1 threed-text">
+                    <i class="fas fa-sign-in-alt me-2"></i>Welcome Back
+                </h2>
+                <p class="text-white-50 mb-0">Login to your AgriQuest account</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="identifier" class="form-label d-flex align-items-center mb-2 text-white">
+                            <i class="fas fa-user me-2"></i>Username or Email
+                        </label>
+                        <input class="form-control form-control-lg" name="identifier" id="identifier" required placeholder="Enter your username or email">
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label d-flex align-items-center mb-2 text-white">
+                            <i class="fas fa-lock me-2"></i>Password
+                        </label>
+                        <input class="form-control form-control-lg" name="password" id="password" type="password" required placeholder="Enter your password">
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button class="btn btn-lg btn-login" type="submit">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center border-0 pt-2 pb-4">
+                <p class="mb-0 text-white">
+                    Don't have an account? 
+                    <a href="{{ url_for('auth.signup') }}" class="fw-bold text-decoration-none text-muted-link">
+                        Sign up here
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

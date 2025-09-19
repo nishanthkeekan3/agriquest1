@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block title %}Home - AgriQuest{% endblock %}
+
+{% block content %}
+<style>
+    /* Professional and mature color palette */
+    :root {
+        --dark-bg: #1e1e2f;
+        --card-bg: rgba(45, 45, 66, 0.4);
+        --border-color: rgba(255, 255, 255, 0.1);
+        --text-color: #e0e0e0;
+        --accent-green: #2ecc71;
+        --light-green: #90EE90;
+        --primary-button-bg: #4CAF50;
+        --button-hover: #4a4a6b;
+    }
+
+    /* Global background and font styling */
+    body {
+        background-color: var(--dark-bg);
+        background-image: url('{{ url_for("static", filename="agricultural-field-background.jpg") }}');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    body::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{{ url_for("static", filename="leaves-pattern.png") }}');
+        background-repeat: repeat;
+        opacity: 0.1;
+        z-index: -1;
+    }
+
+    /* Refined Hero section styling */
+    .hero-section {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        text-align: center;
+        padding: 4rem 0;
+    }
+    
+    .threed-text {
+        font-size: 3.5rem;
+        font-weight: bold;
+        color: var(--text-color);
+        text-shadow:
+            2px 2px 4px rgba(0,0,0,0.5),
+            4px 4px 8px rgba(0,0,0,0.3);
+        letter-spacing: 1px;
+        animation: textPopIn 1s ease-in-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes textPopIn {
+        0% { transform: scale(0.9); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Glassmorphism card styling */
+    .card-feature, .stats-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+    }
+
+    .card-feature:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    
+    .feature-icon {
+        font-size: 3rem;
+        color: var(--accent-green);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .stats-card:hover {
+        transform: scale(1.02);
+    }
+
+    /* Button styling */
+    .btn-custom {
+        padding: 0.8rem 2.5rem;
+        font-weight: bold;
+        border-radius: 50px;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: all 0.5s ease;
+        z-index: -1;
+    }
+
+    .btn-custom:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary-custom {
+        background-color: var(--accent-green);
+        border-color: var(--accent-green);
+        color: var(--dark-bg);
+    }
+
+    .btn-outline-custom {
+        border: 2px solid var(--light-green);
+        color: var(--light-green);
+    }
+
+    .btn-outline-custom:hover {
+        background-color: var(--light-green);
+        color: var(--dark-bg);
+    }
+    
+    /* Fade-in on scroll animation */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 1s ease-out, transform 1s ease-out;
+    }
+</style>
+
+<div class="hero-section text-center position-relative overflow-hidden">
+    <div class="container py-5 z-1 position-relative fade-in">
+        <h1 class="display-3 fw-bold mb-4 threed-text">
+            <i class="fas fa-seedling me-3"></i>AI-Powered Crop Advisor
+        </h1>
+        <p class="lead mb-5 text-white-50 animate__animated animate__fadeInUp">Empower your farm with data-driven insights for smarter crop choices and increased sustainability.</p>
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+            <a class="btn btn-custom btn-primary-custom nav-link-btn" href="{{ url_for('auth.signup') }}">
+                <i class="fas fa-rocket me-2"></i>Start for Free
+            </a>
+            <a class="btn btn-custom btn-outline-custom nav-link-btn" href="{{ url_for('auth.login') }}">
+                <i class="fas fa-sign-in-alt me-2"></i>Log In
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4 mb-5 justify-content-center fade-in">
+        <div class="col-md-6 col-lg-4 d-flex">
+            <div class="card card-feature text-center h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-map-marked-alt feature-icon"></i>
+                    <h5 class="card-title mt-3 text-white">Farm Mapping & Analysis</h5>
+                    <p class="card-text text-white-50">Create detailed farm profiles with interactive maps, soil analysis, and historical data to optimize land use.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 d-flex">
+            <div class="card card-feature text-center h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-brain feature-icon"></i>
+                    <h5 class="card-title mt-3 text-white">AI-Powered Recommendations</h5>
+                    <p class="card-text text-white-50">Get personalized crop suggestions based on real-time climate, soil composition, and market demand for maximum yield.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 d-flex">
+            <div class="card card-feature text-center h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-chart-line feature-icon"></i>
+                    <h5 class="card-title mt-3 text-white">Market Insights</h5>
+                    <p class="card-text text-white-50">Access real-time market trends, price forecasts, and profitability analysis to make informed financial decisions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 justify-content-center fade-in">
+        <div class="col-md-10">
+            <h2 class="text-center mb-4 threed-text">Why Choose AgriQuest?</h2>
+        </div>
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card stats-card h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3 text-white">
+                        <i class="fas fa-cloud-sun me-2 text-info"></i>Seamless Climate Integration
+                    </h5>
+                    <p class="card-text text-white-50">We leverage advanced datasets from **NASA POWER** to provide accurate weather and climate analysis, ensuring your crop plans are resilient and responsive to environmental changes.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card stats-card h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3 text-white">
+                        <i class="fas fa-leaf me-2 text-success"></i>Sustainable Farming
+                    </h5>
+                    <p class="card-text text-white-50">Our core mission is to promote **ecological sustainability**. Our recommendations help you reduce environmental impact by suggesting crops that are suited for your specific conditions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add a class to body after a short delay to trigger fade-in animation
+        setTimeout(() => {
+            document.body.classList.add('page-loaded');
+        }, 100);
+
+        // JavaScript for button hover effects and animation
+        const navLinkBtns = document.querySelectorAll('.nav-link-btn');
+
+        navLinkBtns.forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.style.animation = 'tada 1s infinite';
+                }
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.style.animation = 'none';
+                }
+            });
+        });
+        
+        // Add Intersection Observer for fade-in animations on scroll
+        const faders = document.querySelectorAll('.fade-in');
+        
+        const appearOptions = {
+            threshold: 0.2, // Trigger when 20% of the element is visible
+            rootMargin: '0px 0px -50px 0px' // Start animation a bit earlier
+        };
+
+        const appearOnScroll = new IntersectionObserver(function(entries, appearOnScroll) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    return;
+                } else {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    appearOnScroll.unobserve(entry.target);
+                }
+            });
+        }, appearOptions);
+
+        faders.forEach(fader => {
+            fader.style.opacity = '0';
+            fader.style.transform = 'translateY(20px)';
+            fader.style.transition = 'opacity 1s ease-out, transform 1s ease-out';
+            appearOnScroll.observe(fader);
+        });
+    });
+</script>
+
+{% endblock %}

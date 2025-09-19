@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+{% block title %}My Farm Profiles{% endblock %}
+
+{% block content %}
+<style>
+    /* Professional and mature color palette */
+    :root {
+        --dark-green: #2F4F4F;
+        --lime-green: #90EE90;
+        --off-white: #F5F5DC;
+        --text-color: #e0e0e0;
+        --primary-green: #4CAF50; /* A slightly darker green for 'completed' steps */
+        --accent-green: #2ecc71; /* A distinct accent green */
+        --light-green: rgba(144, 238, 144, 0.1);
+        --sky-blue: #87CEEB;
+        --secondary-green: #3CB371;
+    }
+
+    /* Global background and font styling */
+    body {
+        background-color: var(--dark-green);
+        background-image: url('{{ url_for("static", filename="agricultural-field-background.jpg") }}');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    body::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{{ url_for("static", filename="leaves-pattern.png") }}');
+        background-repeat: repeat;
+        opacity: 0.1;
+        z-index: -1;
+    }
+
+    .container-fluid {
+        padding: 2rem;
+    }
+
+    /* General card styling for glassmorphism effect */
+    .card, .stats-card, .empty-state {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--off-white);
+        transition: all 0.3s ease;
+    }
+
+    .farm-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    
+    .farm-header {
+        background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .farm-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        transform: scale(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .farm-card:hover .farm-header::before {
+        transform: scale(1);
+    }
+    
+    .soil-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+    
+    .soil-loam { background: #5cb85c; color: white; }
+    .soil-clay { background: #f0ad4e; color: white; }
+    .soil-sandy { background: #d9534f; color: white; }
+    .soil-silty { background: #5bc0de; color: white; }
+    .soil-peaty { background: #5cb85c; color: white; }
+    .soil-chalky { background: #778899; color: white; }
+    
+    .coordinate-info {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .action-btn {
+        flex: 1;
+        min-width: 80px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        border: 2px dashed rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: var(--lime-green);
+        margin-bottom: 1rem;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .stats-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-left: 5px solid var(--lime-green);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Text Colors */
+    h2, h4, h5, h6 {
+        color: var(--off-white);
+    }
+    p {
+        color: var(--off-white);
+        margin-bottom: 0.5rem;
+    }
+
+    .text-muted {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    .text-primary { color: #87CEEB !important; }
+    .text-success { color: var(--lime-green) !important; }
+    .text-warning { color: #f7d56e !important; }
+    .text-info { color: #87CEEB !important; }
+    .text-danger { color: #f08080 !important; }
+    .text-secondary { color: #a9a9a9 !important; }
+
+    /* Button Styles */
+    .btn-primary {
+        background-color: var(--lime-green);
+        border-color: var(--lime-green);
+        color: var(--dark-green);
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--dark-green);
+        border-color: var(--lime-green);
+        color: var(--lime-green);
+    }
+
+    .btn-outline-secondary {
+        color: #f7d56e;
+        border-color: #f7d56e;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #f7d56e;
+        color: var(--dark-green);
+    }
+
+    .btn-outline-danger {
+        color: #f08080;
+        border-color: #f08080;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #f08080;
+        color: var(--dark-green);
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        background: rgba(47, 79, 79, 0.9);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--off-white);
+    }
+    .modal-header, .modal-footer {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .modal-title {
+        color: var(--lime-green);
+    }
+    .btn-close {
+        filter: invert(1);
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-2">
+                        <i class="fas fa-map-marked-alt me-2 text-primary"></i>My Farm Profiles
+                    </h2>
+                    <p class="text-muted mb-0">Manage your farm locations and get AI-powered recommendations</p>
+                </div>
+                <a class="btn btn-primary btn-lg" href="{{ url_for('farm.create_profile') }}">
+                    <i class="fas fa-plus me-2"></i>Add New Farm
+                </a>
+            </div>
+            
+            <div class="stats-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-2">
+                            <i class="fas fa-chart-line me-2"></i>Farm Overview
+                        </h5>
+                        <p class="mb-0">You have <strong>{{ profiles|length }}</strong> farm profile{{ 's' if profiles|length != 1 else '' }} registered. 
+                        {% if profiles|length > 0 %}
+                            Click on any farm to view detailed analysis and recommendations.
+                        {% else %}
+                            Create your first farm profile to get started with AI-powered crop recommendations.
+                        {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <i class="fas fa-seedling" style="font-size: 3rem; color: var(--lime-green); opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if profiles %}
+        <div class="row">
+            {% for p in profiles %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card farm-card h-100">
+                        <div class="farm-header">
+                            <h5 class="card-title mb-2">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                {{ p.location_name or 'Unnamed Farm' }}
+                            </h5>
+                            <div class="soil-badge soil-{{ p.soil_type.lower() }}">
+                                <i class="fas fa-seedling me-1"></i>{{ p.soil_type }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="coordinate-info">
+                                <i class="fas fa-crosshairs me-2 text-muted"></i>
+                                <strong>Location:</strong> {{ '%.4f'|format(p.latitude) }}, {{ '%.4f'|format(p.longitude) }}
+                            </div>
+                            
+                            <div class="d-flex align-items-center text-muted mb-3">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                <small>Created {{ p.created_at.strftime('%B %d, %Y') }}</small>
+                            </div>
+                            
+                            <div class="d-flex align-items-center text-muted">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                <small>{{ p.recommendations|length }} recommendation{{ 's' if p.recommendations|length != 1 else '' }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent">
+                            <div class="action-buttons">
+                                <a class="btn btn-primary action-btn" href="{{ url_for('farm.ai_insights') }}">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
+                                <a class="btn btn-outline-secondary action-btn" href="{{ url_for('farm.edit_profile', profile_id=p.id) }}">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </a>
+                                <button type="button" class="btn btn-outline-danger action-btn" onclick="deleteProfile({{ p.id }})">
+                                    <i class="fas fa-trash me-1"></i>Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <h4 class="mt-3">No Farm Profiles Yet</h4>
+            <p class="text-muted">Create your first farm profile to get started with AI-powered crop recommendations.</p>
+            <a class="btn btn-primary btn-lg mt-3" href="{{ url_for('farm.create_profile') }}">
+                <i class="fas fa-plus me-2"></i>Create Your First Farm Profile
+            </a>
+        </div>
+    {% endif %}
+
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this farm profile? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function deleteProfile(profileId) {
+            const form = document.getElementById('deleteForm');
+            form.action = "{{ url_for('farm.delete_profile', profile_id=0) }}".replace('0', profileId);
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+{% block title %}Edit Farm Profile{% endblock %}
+
+{% block content %}
+<style>
+    /* Professional and mature color palette */
+    :root {
+        --dark-green: #2F4F4F;
+        --lime-green: #90EE90;
+        --off-white: #F5F5DC;
+        --text-color: #e0e0e0;
+    }
+
+    /* Global background and font styling */
+    body {
+        background-color: var(--dark-green);
+        background-image: url('{{ url_for("static", filename="agricultural-field-background.jpg") }}');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    body::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{{ url_for("static", filename="leaves-pattern.png") }}');
+        background-repeat: repeat;
+        opacity: 0.1;
+        z-index: -1;
+    }
+    
+    .insights-container {
+        padding: 2rem 0;
+    }
+    
+    .form-container, .map-container, .coordinate-display {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--off-white);
+    }
+
+    .form-container {
+        padding: 2rem;
+    }
+    
+    .map-container {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .map-instructions {
+        background: rgba(144, 238, 144, 0.1);
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--lime-green);
+        color: var(--off-white);
+    }
+    
+    .coordinate-display {
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .soil-type-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 0.5rem;
+    }
+    
+    .soil-type-card:hover, .soil-type-card.selected {
+        border-color: var(--lime-green);
+        background: rgba(144, 238, 144, 0.1);
+    }
+    
+    .soil-type-card input[type="radio"] {
+        display: none;
+    }
+    
+    /* Input field styling */
+    .form-control, .form-control:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--off-white);
+    }
+    
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .form-floating label {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .form-floating .form-control:focus ~ label {
+        color: var(--lime-green);
+    }
+
+    .form-label {
+        color: var(--off-white);
+    }
+
+    /* Button Styles */
+    .btn-outline-custom-secondary {
+        color: #f7d56e;
+        border-color: #f7d56e;
+    }
+    
+    .btn-outline-custom-secondary:hover {
+        background-color: #f7d56e;
+        color: var(--dark-green);
+    }
+    
+    .btn-success {
+        background-color: var(--lime-green);
+        border-color: var(--lime-green);
+        color: var(--dark-green);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-success:hover {
+        background-color: var(--dark-green);
+        border-color: var(--lime-green);
+        color: var(--lime-green);
+    }
+    
+    /* Text Colors */
+    h2, h4 {
+        color: var(--off-white);
+    }
+
+    h6, p {
+        color: var(--off-white);
+    }
+
+    .text-muted {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    .text-primary { color: #87CEEB !important; }
+    .text-success { color: var(--lime-green) !important; }
+    .text-warning { color: #f7d56e !important; }
+    .text-info { color: #87CEEB !important; }
+    .text-secondary { color: #a9a9a9 !important; }
+
+</style>
+
+<div class="insights-container">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex align-items-center mb-3">
+                    <a href="{{ url_for('farm.view_profile', profile_id=profile.id) }}" class="btn btn-outline-custom-secondary me-3">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Profile
+                    </a>
+                    <h2 class="mb-0">
+                        <i class="fas fa-edit me-2 text-primary"></i>Edit Farm Profile
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="form-container">
+                    <form method="POST" id="editForm">
+                        <div class="mb-4">
+                            <h4 class="mb-3">
+                                <i class="fas fa-info-circle me-2 text-primary"></i>
+                                Basic Information
+                            </h4>
+                            
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="location_name" name="location_name" 
+                                        placeholder="Enter farm name" value="{{ profile.location_name or '' }}">
+                                <label for="location_name">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Farm Name (Optional)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="mb-3">
+                                <i class="fas fa-seedling me-2 text-primary"></i>
+                                Select Soil Type
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="soil-type-card" onclick="selectSoilType('Loam')">
+                                        <input type="radio" name="soil_type" value="Loam" id="soil_loam" 
+                                                {{ 'checked' if profile.soil_type == 'Loam' else '' }}>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-seedling me-3 text-success" style="font-size: 1.5rem;"></i>
+                                            <div>
+                                                <h6 class="mb-1">Loam</h6>
+                                                <small class="text-muted">Best for most crops - balanced sand, silt, and clay</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="soil-type-card" onclick="selectSoilType('Clay')">
+                                        <input type="radio" name="soil_type" value="Clay" id="soil_clay"
+                                                {{ 'checked' if profile.soil_type == 'Clay' else '' }}>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-mountain me-3 text-warning" style="font-size: 1.5rem;"></i>
+                                            <div>
+                                                <h6 class="mb-1">Clay</h6>
+                                                <small class="text-muted">Heavy soil - good water retention, needs drainage</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="soil-type-card" onclick="selectSoilType('Sandy')">
+                                        <input type="radio" name="soil_type" value="Sandy" id="soil_sandy"
+                                                {{ 'checked' if profile.soil_type == 'Sandy' else '' }}>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-sun me-3 text-warning" style="font-size: 1.5rem;"></i>
+                                            <div>
+                                                <h6 class="mb-1">Sandy</h6>
+                                                <small class="text-muted">Light soil - good drainage, needs frequent watering</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="soil-type-card" onclick="selectSoilType('Silty')">
+                                        <input type="radio" name="soil_type" value="Silty" id="soil_silty"
+                                                {{ 'checked' if profile.soil_type == 'Silty' else '' }}>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-water me-3 text-info" style="font-size: 1.5rem;"></i>
+                                            <div>
+                                                <h6 class="mb-1">Silty</h6>
+                                                <small class="text-muted">Smooth texture - good for water retention</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="soil-type-card" onclick="selectSoilType('Peaty')">
+                                        <input type="radio" name="soil_type" value="Peaty" id="soil_peaty"
+                                                {{ 'checked' if profile.soil_type == 'Peaty' else '' }}>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-leaf me-3 text-success" style="font-size: 1.5rem;"></i>
+                                            <div>
+                                                <h6 class="mb-1">Peaty</h6>
+                                                <small class="text-muted">Organic rich - excellent for acid-loving plants</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="soil-type-card" onclick="selectSoilType('Chalky')">
+                                        <input type="radio" name="soil_type" value="Chalky" id="soil_chalky"
+                                                {{ 'checked' if profile.soil_type == 'Chalky' else '' }}>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-gem me-3 text-secondary" style="font-size: 1.5rem;"></i>
+                                            <div>
+                                                <h6 class="mb-1">Chalky</h6>
+                                                <small class="text-muted">Alkaline soil - good for certain crops</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="mb-3">
+                                <i class="fas fa-map me-2 text-primary"></i>
+                                Update Farm Location
+                            </h4>
+                            
+                            <div class="map-instructions">
+                                <h6><i class="fas fa-info-circle me-2"></i>How to update your farm location:</h6>
+                                <ul class="mb-0">
+                                    <li>Click anywhere on the map to place a marker at your farm location</li>
+                                    <li>You can drag the marker to fine-tune the position</li>
+                                    <li>The coordinates will be automatically filled in the fields below</li>
+                                    <li>Use the zoom controls to navigate to your area</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="map-container">
+                                <div id="map" style="height: 400px;"></div>
+                            </div>
+                            
+                            <div class="coordinate-display">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-crosshairs me-1 text-primary"></i>Latitude
+                                        </label>
+                                        <input type="text" class="form-control" name="latitude" id="lat" 
+                                                placeholder="Latitude will appear here" required readonly
+                                                value="{{ profile.latitude if profile.latitude else '' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-crosshairs me-1 text-primary"></i>Longitude
+                                        </label>
+                                        <input type="text" class="form-control" name="longitude" id="lng" 
+                                                placeholder="Longitude will appear here" required readonly
+                                                value="{{ profile.longitude if profile.longitude else '' }}">
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Coordinates are automatically updated when you click on the map
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a class="btn btn-outline-custom-secondary" href="{{ url_for('farm.view_profile', profile_id=profile.id) }}">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-1"></i>Update Farm Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    let map;
+    let marker;
+    
+    // Initialize map with existing coordinates
+    const initialLat = {{ profile.latitude if profile.latitude else 20.5937 }};
+    const initialLng = {{ profile.longitude if profile.longitude else 78.9629 }};
+    
+    function selectSoilType(soilType) {
+        // Remove previous selection
+        document.querySelectorAll('.soil-type-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Select new soil type
+        const radioInput = document.querySelector(`input[value="${soilType}"]`);
+        radioInput.checked = true;
+        radioInput.closest('.soil-type-card').classList.add('selected');
+    }
+    
+    function initializeMap() {
+        map = L.map('map').setView([initialLat, initialLng], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Set initial marker
+        if ({{ profile.latitude if profile.latitude else 'null' }}) {
+            setMarker([initialLat, initialLng]);
+        }
+
+        map.on('click', (e) => setMarker(e.latlng));
+    }
+    
+    function setMarker(latlng) {
+        if (marker) marker.remove();
+        marker = L.marker(latlng, {draggable: true}).addTo(map);
+        document.getElementById('lat').value = latlng.lat.toFixed(6);
+        document.getElementById('lng').value = latlng.lng.toFixed(6);
+        
+        marker.on('dragend', (e) => {
+            const pos = e.target.getLatLng();
+            document.getElementById('lat').value = pos.lat.toFixed(6);
+            document.getElementById('lng').value = pos.lng.toFixed(6);
+        });
+    }
+    
+    // Form validation
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        const soilType = document.querySelector('input[name="soil_type"]:checked');
+        const lat = document.getElementById('lat').value;
+        const lng = document.getElementById('lng').value;
+        
+        if (!soilType) {
+            e.preventDefault();
+            alert('Please select a soil type.');
+            return;
+        }
+        
+        if (!lat || !lng) {
+            e.preventDefault();
+            alert('Please select a location on the map.');
+            return;
+        }
+    });
+    
+    // Initialize form when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set initial soil type selection
+        {% if profile.soil_type %}
+            selectSoilType('{{ profile.soil_type }}');
+        {% endif %}
+        
+        // Initialize map
+        initializeMap();
+    });
+</script>
+{% endblock %}

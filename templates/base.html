@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AgriQuest - AI Crop Advisor{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+      /* --- Root Variables: Professional, Dark Palette --- */
+      :root {
+          --dark-bg: #1e1e2f;
+          --card-bg-light: #f8f9fa;
+          --card-bg-dark: rgba(45, 45, 66, 0.4);
+          --border-color-light: rgba(0, 0, 0, 0.1);
+          --border-color-dark: rgba(255, 255, 255, 0.1);
+          --text-light: #e0e0e0;
+          --text-dark: #333;
+          --accent-green: #2ecc71;
+          --input-bg-dark: rgba(255, 255, 255, 0.05);
+          --input-border-dark: rgba(255, 255, 255, 0.2);
+      }
+      
+      /* --- Global Body Styles --- */
+      body {
+          background-color: var(--dark-bg);
+          color: var(--text-light);
+          font-family: 'Roboto', sans-serif;
+          line-height: 1.6;
+          transition: background-color 0.5s ease;
+      }
+      
+      h1, h2, h3, h4, h5, h6 {
+          color: var(--text-light);
+          font-weight: 700;
+          font-family: 'Poppins', sans-serif;
+      }
+      
+      p, span, div, a {
+          color: inherit;
+      }
+
+      /* --- Navigation Bar --- */
+      .navbar {
+          background: rgba(30, 30, 47, 0.8) !important;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+          padding: 1rem 0;
+      }
+      .navbar-brand {
+          color: var(--text-light) !important;
+          font-weight: 700;
+          font-size: 1.8rem;
+          transition: color 0.3s ease;
+      }
+      .navbar-brand:hover {
+          color: var(--accent-green) !important;
+      }
+      .nav-link-btn {
+          padding: 0.5rem 1rem;
+          border-radius: 50px;
+          font-weight: 600;
+      }
+      .navbar-text {
+          color: rgba(255, 255, 255, 0.7) !important;
+      }
+
+      /* --- Buttons --- */
+      .btn-primary {
+          background-color: var(--accent-green);
+          border-color: var(--accent-green);
+          color: var(--dark-bg);
+          font-weight: 600;
+          transition: all 0.3s ease;
+          padding: 0.75rem 1.5rem;
+          border-radius: 50px;
+      }
+      .btn-primary:hover {
+          background-color: #27ae60;
+          border-color: #27ae60;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .btn-outline-light {
+          color: var(--text-light) !important;
+          border-color: var(--text-light) !important;
+          transition: all 0.3s ease;
+      }
+      .btn-outline-light:hover {
+          background-color: var(--accent-green) !important;
+          border-color: var(--accent-green) !important;
+          color: var(--dark-bg) !important;
+      }
+      
+      .btn-shine {
+          position: relative;
+          overflow: hidden;
+          z-index: 1;
+      }
+
+      .btn-shine::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+          transition: all 0.5s ease;
+          z-index: -1;
+      }
+
+      .btn-shine:hover::before {
+          left: 100%;
+      }
+
+      /* --- Card Styles (for the main content, e.g. dashboard) --- */
+      .card {
+          border: none;
+          background-color: var(--card-bg-light);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+          border-radius: 20px;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-feature:hover {
+          transform: translateY(-10px);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      }
+      .stats-card {
+          border-left: 5px solid var(--accent-green);
+          border-radius: 15px;
+          transition: box-shadow 0.3s ease;
+      }
+      .stats-card:hover {
+          box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      }
+      
+      /* --- Form Card Styling (for Login/Signup) --- */
+      .card-form-bg {
+          background: var(--card-bg-dark);
+          border-radius: 20px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid var(--border-color-dark);
+          animation: cardFadeIn 1s ease-out forwards;
+          opacity: 0;
+          color: var(--text-light);
+      }
+      
+      .card-form-bg h2, .card-form-bg p {
+          color: var(--text-light);
+      }
+
+      /* Form Controls */
+      .form-control-lg {
+          background: var(--input-bg-dark);
+          border: 1px solid var(--input-border-dark);
+          color: var(--text-light);
+          padding: 0.75rem 1.25rem;
+          border-radius: 10px;
+          transition: all 0.3s ease;
+      }
+      
+      .form-control-lg:focus {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.5);
+          box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.15);
+          color: var(--text-light);
+      }
+      
+      .form-control-lg::placeholder {
+          color: rgba(255, 255, 255, 0.5);
+      }
+
+      /* Links */
+      .text-muted-link {
+          color: rgba(255, 255, 255, 0.5) !important;
+      }
+      
+      .text-muted-link:hover {
+          color: var(--accent-green) !important;
+      }
+
+      /* Admin Panel Enhancements */
+      .card-admin-panel {
+          border-radius: 15px;
+          background-color: var(--card-bg-dark);
+          color: var(--text-light);
+          border: 1px solid var(--border-color-dark);
+      }
+      .card-admin-panel .card-header {
+          background-color: rgba(255, 255, 255, 0.1) !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .card-admin-panel .table-dark {
+          --bs-table-bg: rgba(255, 255, 255, 0.1) !important;
+          --bs-table-color: var(--text-light);
+      }
+      .card-admin-panel .table-striped>tbody>tr:nth-of-type(odd)>* {
+          background-color: rgba(255, 255, 255, 0.05);
+      }
+
+      /* --- Utility Classes --- */
+      .text-muted {
+          color: rgba(255, 255, 255, 0.6) !important;
+      }
+      .text-white {
+          color: var(--text-light) !important;
+      }
+      .text-white-50 {
+          color: rgba(255, 255, 255, 0.8) !important;
+      }
+      .text-accent-green {
+          color: var(--accent-green) !important;
+      }
+      
+      /* New Alert Styles */
+      .alert-success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+      .alert-warning { background-color: #fff3cd; border-color: #ffeeba; color: #856404; }
+      .alert-danger { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+      
+      /* --- Animations --- */
+      @keyframes cardFadeIn {
+          0% { transform: translateY(20px); opacity: 0; }
+          100% { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes textPopIn {
+          0% { transform: scale(0.5); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+      }
+      
+      .threed-text {
+          font-size: 2.5rem;
+          font-weight: bold;
+          color: var(--text-light);
+          text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+          letter-spacing: 1px;
+          animation: textPopIn 1s ease-in-out forwards;
+          opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+          <i class="fas fa-seedling me-2"></i>AgriQuest
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <ul class="navbar-nav align-items-lg-center">
+            {% if current_user.is_authenticated %}
+              <li class="nav-item d-none d-lg-block">
+                <span class="navbar-text me-3">
+                  <i class="fas fa-user me-1"></i>{{ current_user.username }}
+                </span>
+              </li>
+              {% if current_user.is_admin %}
+                <li class="nav-item me-2">
+                  <a class="btn btn-sm btn-outline-light nav-link-btn btn-shine" href="{{ url_for('admin_login.users') }}">
+                    <i class="fas fa-cog me-1"></i>Admin Panel
+                  </a>
+                </li>
+              {% endif %}
+              <li class="nav-item">
+                <a class="btn btn-sm btn-outline-light nav-link-btn btn-shine" href="{{ url_for('auth.logout') }}">
+                  <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
+              </li>
+            {% else %}
+              <li class="nav-item me-2">
+                <a class="btn btn-sm btn-primary nav-link-btn btn-shine" href="{{ url_for('auth.login') }}">
+                  <i class="fas fa-sign-in-alt me-1"></i>Login
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="btn btn-sm btn-outline-light nav-link-btn btn-shine" href="{{ url_for('auth.signup') }}">
+                  <i class="fas fa-user-plus me-1"></i>Sign up
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, m in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show mt-4" role="alert">
+              {{ m }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

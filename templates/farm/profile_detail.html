@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+{% block title %}Farm Profile - {{ profile.location_name or 'Unnamed' }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Professional and mature color palette */
+    :root {
+        --dark-green: #2F4F4F;
+        --lime-green: #90EE90;
+        --off-white: #F5F5DC;
+        --text-color: #e0e0e0;
+    }
+
+    /* Global background and font styling */
+    body {
+        background-color: var(--dark-green);
+        background-image: url('{{ url_for("static", filename="agricultural-field-background.jpg") }}');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    body::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{{ url_for("static", filename="leaves-pattern.png") }}');
+        background-repeat: repeat;
+        opacity: 0.1;
+        z-index: -1;
+    }
+
+    .insights-container {
+        padding: 2rem 0;
+    }
+    
+    .profile-card {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--off-white);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+    
+    .profile-card .card-header {
+        background: rgba(255, 255, 255, 0.15);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--lime-green);
+    }
+
+    .profile-card h5, .profile-card h6 {
+        color: var(--lime-green);
+        font-weight: bold;
+    }
+    
+    .profile-card p, .profile-card li, .profile-card strong, .profile-card small, .profile-card span {
+        color: var(--off-white);
+    }
+    
+    /* Table Styling */
+    .table {
+        color: var(--off-white);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .table thead tr {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: var(--lime-green);
+    }
+    
+    .table th {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Badges */
+    .badge-success-custom {
+        background-color: var(--lime-green) !important;
+        color: var(--dark-green) !important;
+    }
+
+    .badge-warning-custom {
+        background-color: #f7d56e !important;
+        color: var(--dark-green) !important;
+    }
+
+    .badge-secondary-custom {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        color: var(--off-white) !important;
+    }
+    
+    /* Button Styles */
+    .btn-outline-light {
+        color: var(--off-white);
+        border-color: var(--off-white);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-light:hover {
+        background: var(--off-white);
+        color: var(--dark-green);
+    }
+    
+    .btn-primary, .btn-primary:focus {
+        background-color: var(--lime-green);
+        border-color: var(--lime-green);
+        color: var(--dark-green);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--dark-green);
+        border-color: var(--lime-green);
+        color: var(--lime-green);
+    }
+    
+    /* New Custom Buttons */
+    .btn-outline-custom-secondary {
+        color: #f7d56e;
+        border-color: #f7d56e;
+    }
+
+    .btn-outline-custom-secondary:hover {
+        background-color: #f7d56e;
+        color: var(--dark-green);
+    }
+    
+    .btn-outline-custom-success {
+        color: var(--lime-green);
+        border-color: var(--lime-green);
+    }
+
+    .btn-outline-custom-success:hover {
+        background-color: var(--lime-green);
+        color: var(--dark-green);
+    }
+    
+    .btn-outline-custom-primary {
+        color: #87CEEB;
+        border-color: #87CEEB;
+    }
+
+    .btn-outline-custom-primary:hover {
+        background-color: #87CEEB;
+        color: var(--dark-green);
+    }
+
+    /* Text Colors for readability */
+    .text-white { color: var(--off-white) !important; }
+    .text-white-50 { color: rgba(255, 255, 255, 0.7) !important; }
+    .text-primary { color: #87CEEB !important; }
+    .text-success { color: var(--lime-green) !important; }
+    .text-warning { color: #f7d56e !important; }
+    .text-info { color: #87CEEB !important; }
+    .text-danger { color: #ff6347 !important; }
+    .text-muted { color: rgba(255, 255, 255, 0.5) !important; }
+    .text-capitalize { text-transform: capitalize; }
+
+    /* Loading Spinner */
+    .loading {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: loading-spin 1s linear infinite;
+    }
+
+    @keyframes loading-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="insights-container">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0 text-white">
+                        <i class="fas fa-map-marker-alt me-2 text-lime-green"></i>{{ profile.location_name or 'Unnamed Location' }}
+                    </h2>
+                    <div>
+                        <a class="btn btn-outline-custom-secondary me-2" href="{{ url_for('farm.edit_profile', profile_id=profile.id) }}">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </a>
+                        <a class="btn btn-outline-custom-success me-2" href="{{ url_for('farm.farm_market_analysis', profile_id=profile.id) }}">
+                            <i class="fas fa-chart-line me-1"></i>Market Analysis
+                        </a>
+                        <a class="btn btn-outline-custom-primary" href="{{ url_for('farm.list_profiles') }}">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Profiles
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="profile-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Farm Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Soil Type:</strong> {{ profile.soil_type }}</p>
+                        <p><strong>Coordinates:</strong> {{ '%.6f'|format(profile.latitude) }}, {{ '%.6f'|format(profile.longitude) }}</p>
+                        <p><strong>Created:</strong> {{ profile.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="profile-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-brain me-2"></i>AI Recommendations
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        {% if recs %}
+                            <p class="text-success">
+                                <i class="fas fa-check-circle me-2"></i>{{ recs|length }} recommendations available
+                            </p>
+                            <button class="btn btn-outline-light" onclick="exportRecommendations()">
+                                <i class="fas fa-download me-1"></i>Export Data
+                            </button>
+                        {% else %}
+                            <p class="text-muted">No recommendations yet</p>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('farm.generate_recommendations', profile_id=profile.id) }}" class="mt-2" id="recommendationForm">
+                            <button class="btn btn-primary" type="submit" id="generateBtn">
+                                <i class="fas fa-magic me-1"></i>{{ 'Regenerate' if recs else 'Generate' }} Recommendations
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if recs %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-lightbulb me-2"></i>Crop Recommendations
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Crop</th>
+                                            <th>Market Demand</th>
+                                            <th>Profit Estimate</th>
+                                            <th>Ecological Impact</th>
+                                            <th>Rationale</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for r in recs %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ r.crop_name }}</strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge {{ 'badge-success-custom' if (r.market_demand_score or 0) > 0.7 else 'badge-warning-custom' if (r.market_demand_score or 0) > 0.4 else 'badge-secondary-custom' }}">
+                                                        {{ '%.1f'|format((r.market_demand_score or 0) * 100) }}%
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="text-success">
+                                                        <i class="fas fa-rupee-sign me-1"></i>{{ '%.0f'|format(r.profitability_estimate or 0) }}/hectare
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted">{{ r.ecological_impact or 'Improves soil health' }}</small>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted">{{ r.rationale }}</small>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-line me-2"></i>Market Price Trends & Insights
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="pricesChart" height="100"></canvas>
+                            
+                            <div class="row mt-4" id="marketInsights">
+                                {% for r in recs[:3] %}
+                                    {% if r.data and r.data.market %}
+                                        <div class="col-md-4 mb-3">
+                                            <div class="profile-card border-{{ 'success' if r.data.market.get('price_change_pct', 0) > 0 else 'warning' if r.data.market.get('price_change_pct', 0) < -5 else 'info' }}">
+                                                <div class="card-body p-3">
+                                                    <h6 class="card-title mb-2">
+                                                        <i class="fas fa-seedling me-1 text-success"></i>{{ r.crop_name }}
+                                                    </h6>
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="text-muted">Current Price:</span>
+                                                        <strong class="text-{{ 'success' if r.data.market.get('price_change_pct', 0) > 0 else 'danger' if r.data.market.get('price_change_pct', 0) < 0 else 'info' }}">
+                                                            ₹{{ r.data.market.get('latest_price', 0) }}/quintal
+                                                        </strong>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="text-muted">Change:</span>
+                                                        <span class="badge bg-{{ 'success' if r.data.market.get('price_change_pct', 0) > 0 else 'danger' if r.data.market.get('price_change_pct', 0) < 0 else 'secondary' }}">
+                                                            {{ r.data.market.get('price_change_pct', 0) }}%
+                                                        </span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span class="text-muted">Trend:</span>
+                                                        <small class="text-capitalize text-white">{{ r.data.market.get('market_insights', {}).get('trend', 'stable') }}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-lightbulb feature-icon" style="font-size: 4rem; color: var(--lime-green);"></i>
+                <h4 class="mt-3 text-white">No Recommendations Yet</h4>
+                <p class="text-muted">Generate AI-powered crop recommendations based on your farm's location, soil type, and climate data.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const recs = {{ recs|map(attribute='crop_name')|list|tojson }};
+    const recsData = {{ recs_json|tojson if recs else '[]' }};
+
+    // Set global Chart.js defaults for consistent styling
+    Chart.defaults.font.family = 'Roboto, sans-serif';
+    Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+    Chart.defaults.plugins.legend.labels.color = 'var(--off-white)';
+    
+    // Create datasets for multiple crops
+    const datasets = [];
+    // Updated colors for better visibility on dark background
+    const colors = ['#90EE90', '#87CEEB', '#f7d56e', '#ff6347'];
+    
+    recsData.slice(0, 3).forEach((rec, index) => {
+        if (rec.data && rec.data.market && rec.data.market.trend_series) {
+            const series = rec.data.market.trend_series;
+            const data = series.map(p => p.price);
+            
+            datasets.push({
+                label: rec.crop_name + ' Price Trend',
+                data: data,
+                borderColor: colors[index % colors.length],
+                backgroundColor: colors[index % colors.length] + '20',
+                tension: 0.4,
+                fill: false,
+                pointRadius: 2,
+                pointHoverRadius: 4
+            });
+        }
+    });
+    
+    if (datasets.length > 0) {
+        new Chart(document.getElementById('pricesChart'), {
+            type: 'line',
+            data: { 
+                labels: datasets[0].data.map((_, i) => i), // Use index as labels for simplicity
+                datasets: datasets
+            },
+            options: { 
+                responsive: true,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                scales: { 
+                    y: { 
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Price (₹/quintal)',
+                            color: 'var(--off-white)'
+                        },
+                        ticks: { color: 'var(--off-white)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Days (Last 30 days)',
+                            color: 'var(--off-white)'
+                        },
+                        ticks: { color: 'var(--off-white)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: { color: 'var(--off-white)' }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return 'Day ' + (context[0].dataIndex + 1);
+                            },
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + context.parsed.y;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById('pricesChart').innerHTML = '<div class="text-center text-muted p-4">No market data available</div>';
+    }
+
+    function exportRecommendations() {
+        const data = {{ recs_json|tojson if recs else '[]' }}.map(r => ({
+            crop: r.crop_name,
+            market_demand: (r.market_demand_score || 0) * 100,
+            profit_estimate: r.profitability_estimate || 0,
+            ecological_impact: r.ecological_impact || 'N/A',
+            rationale: r.rationale || 'N/A'
+        }));
+        
+        const csv = 'Crop,Market Demand (%),Profit Estimate (₹/hectare),Ecological Impact,Rationale\n' +
+                    data.map(r => `"${r.crop}","${r.market_demand.toFixed(1)}","${r.profit_estimate.toFixed(0)}","${r.ecological_impact}","${r.rationale}"`).join('\n');
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'crop_recommendations_{{ profile.location_name or "farm" }}.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    // Add loading state to recommendation generation
+    document.getElementById('recommendationForm').addEventListener('submit', function() {
+        const btn = document.getElementById('generateBtn');
+        btn.innerHTML = '<span class="loading me-2"></span>Generating...';
+        btn.disabled = true;
+    });
+</script>
+{% endblock %}

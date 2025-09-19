@@ -1,0 +1,507 @@
+{% extends "base.html" %}
+{% block title %}Market Data - AgriQuest{% endblock %}
+
+{% block content %}
+<style>
+    /* Professional and mature color palette */
+    :root {
+        --dark-green: #2F4F4F;
+        --lime-green: #90EE90;
+        --off-white: #F5F5DC;
+        --text-color: #e0e0e0;
+    }
+
+    /* Global background and font styling */
+    body {
+        background-color: var(--dark-green);
+        background-image: url('{{ url_for("static", filename="agricultural-field-background.jpg") }}');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    body::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{{ url_for("static", filename="leaves-pattern.png") }}');
+        background-repeat: repeat;
+        opacity: 0.1;
+        z-index: -1;
+    }
+
+    /* AI Insights Container and Card Styles (Reused for consistency) */
+    .insights-container {
+        padding: 2rem 0;
+    }
+    
+    .insights-card {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--off-white);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .insights-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+    
+    .insights-card h3,
+    .insights-card h4,
+    .insights-card h5,
+    .insights-card h6 {
+        color: var(--lime-green);
+        font-weight: bold;
+    }
+    
+    .insights-card p,
+    .insights-card li,
+    .insights-card strong,
+    .insights-card small {
+        color: var(--off-white);
+    }
+
+    /* Individual Card Specifics */
+    .price-card, .chart-container, .market-insight {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--off-white);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .price-card {
+        border-left: 5px solid var(--lime-green);
+    }
+
+    .market-insight {
+        background-color: rgba(144, 238, 144, 0.1);
+        border: 1px solid var(--lime-green);
+    }
+
+    /* Custom color overrides */
+    .market-insight h3, .market-insight h6 {
+        color: var(--lime-green);
+    }
+
+    .price-trend-up { color: var(--lime-green) !important; font-weight: bold; }
+    .price-trend-down { color: #FF6347 !important; font-weight: bold; }
+    .price-trend-stable { color: #f7d56e !important; font-weight: bold; }
+
+    /* Badges & Indicators */
+    .badge {
+        background-color: var(--lime-green) !important;
+        color: var(--dark-green) !important;
+    }
+
+    .trend-indicator {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        margin: 0.1rem;
+        color: var(--dark-green);
+    }
+
+    .trend-up { background: var(--lime-green); }
+    .trend-down { background: #FF6347; }
+    .trend-stable { background: #f7d56e; }
+    
+    .volatility-high { background: #FF6347; }
+    .volatility-medium { background: #f7d56e; }
+    .volatility-low { background: var(--lime-green); }
+
+    .progress-bar {
+        background-color: var(--lime-green);
+        transition: width 0.5s ease-in-out;
+    }
+    
+    /* Button Styles (Reused) */
+    .btn-outline-light {
+        color: var(--off-white);
+        border-color: var(--off-white);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-light:hover {
+        background: var(--off-white);
+        color: var(--dark-green);
+    }
+    
+    .btn-primary {
+        background-color: var(--lime-green);
+        border-color: var(--lime-green);
+        color: var(--dark-green);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--dark-green);
+        border-color: var(--dark-green);
+        color: var(--lime-green);
+    }
+    
+    /* Text Colors for readability */
+    .text-white { color: var(--off-white) !important; }
+    .text-white-50 { color: rgba(255, 255, 255, 0.7) !important; }
+    .text-primary { color: var(--lime-green) !important; }
+    .text-success { color: var(--lime-green) !important; }
+    .text-warning { color: #f7d56e !important; }
+    .text-info { color: #87CEEB !important; }
+    .text-danger { color: #ff6347 !important; }
+    .text-muted { color: rgba(255, 255, 255, 0.5) !important; }
+</style>
+
+<div class="insights-container">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex align-items-center mb-3">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light me-3">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                    </a>
+                    <h1 class="text-white mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Market Data & Analysis
+                    </h1>
+                </div>
+                <p class="text-white-50 lead">Real-time market trends and price analysis for informed decision making</p>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="market-insight insights-card">
+                    <h3 class="mb-3">
+                        <i class="fas fa-chart-bar me-2"></i>Market Overview
+                    </h3>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6 class="text-white-50">Total Crops Tracked</h6>
+                            <p class="fw-bold fs-4">{{ market_data|length }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-white-50">Average Price</h6>
+                            <p class="fw-bold fs-4">₹{{ "%.0f"|format((market_data.values()|map(attribute='latest_price')|list|sum) / market_data|length) }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-white-50">Market Trend</h6>
+                            <p class="fw-bold fs-4">
+                                {% set avg_change = (market_data.values()|map(attribute='price_change_pct')|list|sum) / market_data|length %}
+                                {% if avg_change > 2 %}
+                                    <span class="price-trend-up">↗ Rising</span>
+                                {% elif avg_change < -2 %}
+                                    <span class="price-trend-down">↘ Falling</span>
+                                {% else %}
+                                    <span class="price-trend-stable">→ Stable</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-white-50">Best Opportunity</h6>
+                            {% set best_crop = market_data.items()|max(attribute='1.price_change_pct') %}
+                            <p class="fw-bold fs-4">{{ best_crop[0] }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="chart-container insights-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-chart-area me-2 text-primary"></i>Price Trends (30 Days)
+                    </h4>
+                    <canvas id="priceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="insights-card p-4">
+                    <h3 class="card-title mb-4">
+                        <i class="fas fa-seedling me-2 text-success"></i>Crop Price Analysis
+                    </h3>
+                    
+                    <div class="row">
+                        {% for crop, data in market_data.items() %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="price-card insights-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="mb-0 text-white">{{ crop }}</h5>
+                                    <span class="badge">₹{{ "%.0f"|format(data.latest_price) }}/quintal</span>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    {% if data.price_change_pct > 0 %}
+                                        <span class="price-trend-up">+{{ "%.1f"|format(data.price_change_pct) }}%</span>
+                                    {% elif data.price_change_pct < 0 %}
+                                        <span class="price-trend-down">{{ "%.1f"|format(data.price_change_pct) }}%</span>
+                                    {% else %}
+                                        <span class="price-trend-stable">0.0%</span>
+                                    {% endif %}
+                                    <small class="text-muted ms-2">vs last month</small>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <small class="text-muted">Demand Index:</small>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ data.demand_index * 100 }}%"
+                                             aria-valuenow="{{ data.demand_index * 100 }}" 
+                                             aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">{{ "%.1f"|format(data.demand_index * 100) }}%</small>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <small class="text-muted">Market Insights:</small>
+                                    <div class="mt-1">
+                                        <span class="trend-indicator trend-{{ data.market_insights.trend }}">
+                                            {{ data.market_insights.trend.title() }}
+                                        </span>
+                                        <span class="trend-indicator volatility-{{ data.market_insights.volatility }}">
+                                            {{ data.market_insights.volatility.title() }} Volatility
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row text-center mt-2">
+                                    <div class="col-6">
+                                        <small class="text-muted">Support</small>
+                                        <div class="fw-bold text-white">₹{{ "%.0f"|format(data.support_level) }}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Resistance</small>
+                                        <div class="fw-bold text-white">₹{{ "%.0f"|format(data.resistance_level) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="chart-container insights-card">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-pie me-2 text-warning"></i>Demand Distribution
+                    </h5>
+                    <canvas id="demandChart" width="300" height="300"></canvas>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="chart-container insights-card">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-bar me-2 text-info"></i>Price Volatility
+                    </h5>
+                    <canvas id="volatilityChart" width="300" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{{ url_for('farm.ai_insights') }}" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-brain me-2"></i>Get AI Insights
+                </a>
+                <a href="{{ url_for('farm.list_profiles') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-seedling me-2"></i>Manage Farm Profiles
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Market data from backend
+    const marketData = {{ market_data|tojson }};
+    
+    // Set global Chart.js defaults for consistent styling
+    Chart.defaults.font.family = 'Roboto, sans-serif';
+    Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+    Chart.defaults.plugins.title.color = 'var(--off-white)';
+    Chart.defaults.plugins.legend.labels.color = 'var(--off-white)';
+    
+    // Price Trends Chart
+    const priceCtx = document.getElementById('priceChart').getContext('2d');
+    const priceChart = new Chart(priceCtx, {
+        type: 'line',
+        data: {
+            labels: Object.keys(marketData),
+            datasets: [{
+                label: 'Current Price (₹/quintal)',
+                data: Object.values(marketData).map(data => data.latest_price),
+                borderColor: 'rgb(144, 238, 144)',
+                backgroundColor: 'rgba(144, 238, 144, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Price Change (%)',
+                data: Object.values(marketData).map(data => data.price_change_pct),
+                borderColor: 'rgb(255, 152, 0)',
+                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Crop Price Trends and Changes'
+                },
+                legend: { display: true }
+            },
+            scales: {
+                x: { ticks: { color: 'var(--off-white)' } },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Price (₹/quintal)',
+                        color: 'var(--off-white)'
+                    },
+                    ticks: { color: 'var(--off-white)' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Change (%)',
+                        color: 'var(--off-white)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: { color: 'var(--off-white)' }
+                }
+            }
+        }
+    });
+    
+    // Demand Distribution Chart
+    const demandCtx = document.getElementById('demandChart').getContext('2d');
+    const demandChart = new Chart(demandCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(marketData),
+            datasets: [{
+                data: Object.values(marketData).map(data => data.demand_index * 100),
+                backgroundColor: [
+                    '#90EE90', '#2196F3', '#FF9800', '#F44336',
+                    '#BDB76B', '#00BCD4', '#8BC34A', '#FFC107', '#795548'
+                ],
+                borderWidth: 2,
+                borderColor: 'var(--dark-green)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Demand Index Distribution'
+                },
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+    
+    // Volatility Chart
+    const volatilityCtx = document.getElementById('volatilityChart').getContext('2d');
+    const volatilityChart = new Chart(volatilityCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(marketData),
+            datasets: [{
+                label: 'Volatility Level',
+                data: Object.values(marketData).map(data => {
+                    const vol = data.market_insights.volatility;
+                    return vol === 'high' ? 3 : vol === 'medium' ? 2 : 1;
+                }),
+                backgroundColor: Object.values(marketData).map(data => {
+                    const vol = data.market_insights.volatility;
+                    return vol === 'high' ? '#F44336' : vol === 'medium' ? '#FF9800' : '#90EE90';
+                }),
+                borderColor: Object.values(marketData).map(data => {
+                    const vol = data.market_insights.volatility;
+                    return vol === 'high' ? '#D32F2F' : vol === 'medium' ? '#F57C00' : '#388E3C';
+                }),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Price Volatility by Crop'
+                },
+                legend: { display: false }
+            },
+            scales: {
+                x: { ticks: { color: 'var(--off-white)' } },
+                y: {
+                    beginAtZero: true,
+                    max: 3,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function(value) {
+                            return value === 3 ? 'High' : value === 2 ? 'Medium' : 'Low';
+                        },
+                        color: 'var(--off-white)'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Volatility Level',
+                        color: 'var(--off-white)'
+                    },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                }
+            }
+        }
+    });
+    
+    // Add animation to progress bars
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 500);
+        });
+    });
+</script>
+{% endblock %}

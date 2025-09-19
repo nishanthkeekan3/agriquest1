@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block title %}Error {{ error_code }} - AgriQuest{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --dark-bg: #1e1e2f;
+        --card-bg: rgba(45, 45, 66, 0.4);
+        --border-color: rgba(255, 255, 255, 0.1);
+        --text-color: #e0e0e0;
+        --error-red: #F44336;
+        --accent-blue: #78909c;
+        --button-hover: #4a4a6b;
+    }
+
+    /* Professional, dark background */
+    body {
+        background-color: var(--dark-bg);
+        background-image: url('{{ url_for("static", filename="agricultural-field-background.jpg") }}');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    body::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{{ url_for("static", filename="leaves-pattern.png") }}');
+        background-repeat: repeat;
+        opacity: 0.1;
+        z-index: -1;
+    }
+
+    .error-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+    
+    .error-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        padding: 3rem;
+        text-align: center;
+        max-width: 600px;
+        width: 100%;
+        color: var(--text-color);
+    }
+    
+    .error-code {
+        font-size: 6rem;
+        font-weight: bold;
+        color: var(--error-red);
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 8px rgba(244, 67, 54, 0.3);
+    }
+    
+    .error-message {
+        font-size: 1.5rem;
+        color: var(--text-color);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+    
+    .error-details {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        text-align: left;
+        border-left: 4px solid var(--error-red);
+        color: var(--text-color);
+    }
+    
+    .error-details h6 {
+        color: var(--error-red);
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+    
+    .error-details pre {
+        background: rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        padding: 1rem;
+        overflow-x: auto;
+        font-size: 0.9rem;
+        color: var(--text-color);
+    }
+    
+    .action-buttons {
+        margin-top: 2rem;
+    }
+    
+    .btn-home {
+        background: var(--accent-blue);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0.5rem;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+    
+    .btn-home:hover {
+        transform: translateY(-2px);
+        background-color: var(--button-hover);
+    }
+    
+    .btn-back {
+        background: transparent;
+        border: 2px solid var(--accent-blue);
+        color: var(--accent-blue);
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-back:hover {
+        background: var(--accent-blue);
+        color: white;
+    }
+    
+    .text-muted {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+</style>
+
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-code">{{ error_code }}</div>
+        <h2 class="error-message">{{ error_message }}</h2>
+        
+        {% if error_code == 500 %}
+        <div class="error-details">
+            <h6><i class="fas fa-exclamation-triangle me-2"></i>Debug Information</h6>
+            <p><strong>Error Type:</strong> Internal Server Error</p>
+            <p><strong>Timestamp:</strong> Current time</p>
+            <p><strong>Request URL:</strong> {{ request.url }}</p>
+            <p><strong>Request Method:</strong> {{ request.method }}</p>
+            
+            {% if request.args %}
+            <p><strong>Query Parameters:</strong></p>
+            <pre>{{ request.args }}</pre>
+            {% endif %}
+            
+            {% if request.form %}
+            <p><strong>Form Data:</strong></p>
+            <pre>{{ request.form }}</pre>
+            {% endif %}
+            
+            <p class="mt-3"><strong>Common Causes:</strong></p>
+            <ul class="text-start">
+                <li>Database connection issues</li>
+                <li>Missing environment variables</li>
+                <li>Template rendering errors</li>
+                <li>Import/dependency issues</li>
+                <li>Database schema problems</li>
+            </ul>
+        </div>
+        {% endif %}
+        
+        {% if error_code == 404 %}
+        <div class="error-details">
+            <h6><i class="fas fa-search me-2"></i>What happened?</h6>
+            <p>The page you're looking for doesn't exist or has been moved.</p>
+            <p><strong>Requested URL:</strong> {{ request.url }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('home') }}" class="btn-home">
+                <i class="fas fa-home me-2"></i>Go Home
+            </a>
+            <a href="javascript:history.back()" class="btn-back">
+                <i class="fas fa-arrow-left me-2"></i>Go Back
+            </a>
+        </div>
+        
+        <div class="mt-4">
+            <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                If this error persists, please check the application logs or contact support.
+            </small>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Log error details to console for debugging
+    console.error('Error {{ error_code }}: {{ error_message }}');
+    console.error('URL: {{ request.url }}');
+    console.error('Method: {{ request.method }}');
+    
+    // Auto-refresh after 30 seconds for 500 errors (in case it's temporary)
+    {% if error_code == 500 %}
+    setTimeout(function() {
+        if (confirm('This might be a temporary error. Would you like to try again?')) {
+            window.location.reload();
+        }
+    }, 30000);
+    {% endif %}
+</script>
+{% endblock %}
